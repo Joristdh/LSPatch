@@ -19,6 +19,7 @@ public class ManifestParser {
         String packageName = null;
         String appComponentFactory = null;
         int minSdkVersion = 0;
+        int versionCode = 0;
         try {
 
             while (true) {
@@ -50,11 +51,15 @@ public class ManifestParser {
                             appComponentFactory = parser.getAttrValue(i).toString();
                         }
 
+                        if ("versionCode".equals(attrName)) {
+                            versionCode = Integer.parseInt(parser.getAttrValue(i).toString());
+                        }
+
                         if (packageName != null && packageName.length() > 0 &&
                                 appComponentFactory != null && appComponentFactory.length() > 0 &&
-                                minSdkVersion > 0
+                                minSdkVersion > 0 && versionCode > 0
                         ) {
-                            return new Pair(packageName, appComponentFactory, minSdkVersion);
+                            return new Pair(packageName, appComponentFactory, minSdkVersion, versionCode);
                         }
                     }
                 } else if (type == AxmlParser.END_TAG) {
@@ -83,11 +88,13 @@ public class ManifestParser {
         public String appComponentFactory;
 
         public int minSdkVersion;
+        public int versionCode;
 
-        public Pair(String packageName, String appComponentFactory, int minSdkVersion) {
+        public Pair(String packageName, String appComponentFactory, int minSdkVersion, int versionCode) {
             this.packageName = packageName;
             this.appComponentFactory = appComponentFactory;
             this.minSdkVersion = minSdkVersion;
+            this.versionCode = versionCode;
         }
     }
 
