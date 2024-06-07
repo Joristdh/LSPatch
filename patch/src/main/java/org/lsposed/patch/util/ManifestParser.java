@@ -70,7 +70,7 @@ public class ManifestParser {
             return null;
         }
 
-        return new Pair(packageName, appComponentFactory, minSdkVersion);
+        return new Pair(packageName, appComponentFactory, minSdkVersion, versionCode);
     }
 
     /**
