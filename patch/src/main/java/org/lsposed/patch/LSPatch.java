@@ -223,12 +223,14 @@ public class LSPatch {
             // parse the app appComponentFactory full name from the manifest file
             final String appComponentFactory;
             int minSdkVersion;
+            int versionCode;
             try (var is = manifestEntry.open()) {
                 var pair = ManifestParser.parseManifestFile(is);
                 if (pair == null)
                     throw new PatchError("Failed to parse AndroidManifest.xml");
                 appComponentFactory = pair.appComponentFactory;
                 minSdkVersion = pair.minSdkVersion;
+                versionCode = pair.versionCode;
                 logger.d("original appComponentFactory class: " + appComponentFactory);
                 logger.d("original minSdkVersion: " + minSdkVersion);
             }
@@ -250,7 +252,7 @@ public class LSPatch {
             final var config = new PatchConfig(useManager, debuggableFlag, overrideVersionCode, sigbypassLevel, originalSignature, appComponentFactory);
             final var configBytes = new Gson().toJson(config).getBytes(StandardCharsets.UTF_8);
             final var metadata = Base64.getEncoder().encodeToString(configBytes);
-            try (var is = new ByteArrayInputStream(modifyManifestFile(manifestEntry.open(), metadata, minSdkVersion))) {
+            try (var is = new ByteArrayInputStream(modifyManifestFile(manifestEntry.open(), metadata, minSdkVersion, versionCode))) {
                 dstZFile.add(ANDROID_MANIFEST_XML, is);
             } catch (Throwable e) {
                 throw new PatchError("Error when modifying manifest", e);
@@ -336,11 +338,11 @@ public class LSPatch {
         }
     }
 
-    private byte[] modifyManifestFile(InputStream is, String metadata, int minSdkVersion) throws IOException {
+    private byte[] modifyManifestFile(InputStream is, String metadata, int minSdkVersion, int versionCode) throws IOException {
         ModificationProperty property = new ModificationProperty();
 
         if (overrideVersionCode)
-            property.addManifestAttribute(new AttributeItem(NodeValue.Manifest.VERSION_CODE, 1519));
+            property.addManifestAttribute(new AttributeItem(NodeValue.Manifest.VERSION_CODE, ++versionCode));
         if (minSdkVersion < 28)
             property.addUsesSdkAttribute(new AttributeItem(NodeValue.UsesSDK.MIN_SDK_VERSION, 28));
         property.addApplicationAttribute(new AttributeItem(NodeValue.Application.DEBUGGABLE, debuggableFlag));
